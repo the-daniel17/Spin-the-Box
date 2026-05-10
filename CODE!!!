@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Spin the Box</title>
+<style>
+.glow-subtitle {
+  font-weight: bold;
+  color: #8dd639ff;
+  text-shadow:
+    0 0 5px #334bffff,
+    0 0 10px #aa33ffff,
+    0 0 15px #4000ffff,
+    0 0 20px #00bbffff,
+    0 0 30px #4b00ccff;
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0% { text-shadow: 0 0 5px #4733ffff, 0 0 10px rgba(51, 122, 255, 1), 0 0 15px #ff00ff; }
+  50% { text-shadow: 0 0 10px #ff8c66ff, 0 0 20px #ff33a0ff, 0 0 30px #00ff66ff; }
+  100% { text-shadow: 0 0 5px #ffe433ff, 0 0 10px #7a33ffff, 0 0 15px #00ffe1ff; }
+}
+
+@keyframes eyeDestroyer {
+  0% { filter: brightness(1); }
+  20% { filter: brightness(4); }
+  40% { filter: brightness(6); }
+  60% { filter: brightness(4); }
+  80% { filter: brightness(2); }
+  100% { filter: brightness(1); }
+}
+
+.flashbang {
+  animation: eyeDestroyer 0.6s ease-out;
+}
+
+:root {
+  --bg:#fff;--text:#222;--accent:#44f;--accent-soft:#dde3ff;--border:#ccc;
+  --log-bg:#f7f7f7;--log-border:#ccc;--log-info:#064;--log-system:#aa6a00;
+  --log-cheat:#088;--log-dev:#408;--log-error:#b00020;--log-achievement:#7b1fa2;
+}
+body.dark {
+  --bg:#12001f;--text:#f8eaff;--accent:#ff77ff;--accent-soft:#2a003f;--border:#5a2a7a;
+  --log-bg:#1a0028;--log-border:#7b3fa8;--log-info:#7cffc4;--log-system:#ffd27f;
+  --log-cheat:#7cfbff;--log-dev:#c77bff;--log-error:#ff6b9c;--log-achievement:#ff9bff;
+}
+body,button,h1,p{font-family:"Courier New",monospace;letter-spacing:1px;background:var(--bg);color:var(--text);}
+h1{margin-bottom:4px;}
+#box{
+  width:150px;height:150px;border-radius:10px;margin-bottom:8px;
+  background:linear-gradient(45deg,red,orange,yellow,lime,green,cyan,skyblue,blue,indigo,purple,magenta,pink,red);
+  background-size:600% 600%;animation:rainbowShift 6s linear infinite;
+  transition:transform .2s ease,filter .2s ease;
+}
+@keyframes rainbowShift{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
+.spin-active{transform:scale(1.2) rotate(360deg);filter:brightness(1.4);}
+#message{margin-top:10px;font-size:18px;opacity:0;transition:opacity .3s ease;}
+#message.show{opacity:1;}
+button{
+  margin-top:4px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);
+  background:var(--accent-soft);color:var(--text);cursor:pointer;
+}
+button:hover{filter:brightness(1.05);}
+#themeToggle{margin-left:6px;}
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;
+  align-items:center;justify-content:center;z-index:999;
+}
+.modal{
+  background:var(--bg);padding:16px 24px;border-radius:10px;
+  box-shadow:0 0 15px rgba(0,0,0,.4);max-width:360px;text-align:center;
+  border:1px solid var(--accent);
+}
+#achievementList h3{margin:12px 0 4px;text-decoration:underline;}
+#achievementList p.unlocked{color:#080;}
+#achievementList p.locked{color:#b00020;}
+#cheatPanel{
+  margin-top:8px;padding:8px;border-radius:8px;border:1px dashed var(--accent);
+  background:var(--accent-soft);display:none;max-width:420px;
+}
+#cheatPanel h4{margin:4px 0;}
+#cheatPanel code{background:#eee;padding:1px 4px;border-radius:4px;}
+body.dark #cheatPanel code{background:#2a003f;color:#f8eaff;}
+#cheatWarning{color:#b00020;font-size:12px;margin-top:4px;}
+#cheaterToggle{border:1px solid #b71c1c;background:#ffe5e5;}
+body.dark #cheaterToggle{background:#3a0010;color:#ffd0d0;}
+#logPanel{
+  margin-top:10px;padding:8px;border-radius:8px;border:1px solid var(--log-border);
+  background:var(--log-bg);max-width:420px;max-height:180px;overflow-y:auto;font-size:11px;
+}
+#logPanel h4{margin:0 0 4px;}
+.log-entry{margin:2px 0;font-family:"Courier New",monospace;}
+.log-entry .time{color:#777;margin-right:4px;}
+.log-info .text{color:var(--log-info);}
+.log-system .text{color:var(--log-system);}
+.log-cheat .text{color:var(--log-cheat);}
+.log-dev .text{color:var(--log-dev);}
+.log-error .text{color:var(--log-error);}
+.log-achievement .text{color:var(--log-achievement);}
+.log-filters button{
+  margin:2px;padding:2px 6px;font-size:10px;border-radius:6px;
+  border:1px solid var(--border);background:var(--bg);
+}
+.log-filters button.active{background:var(--accent-soft);}
+#clearLogsBtn{margin-top:4px;padding:2px 6px;font-size:10px;}
+.confetti{
+  position:absolute;width:6px;height:10px;background:#ff0;opacity:.9;
+  pointer-events:none;animation:confettiFall .8s linear forwards;z-index:500;
+}
+@keyframes confettiFall{
+  0%{transform:translateY(0) rotate(0);opacity:1;}
+  100%{transform:translateY(80px) rotate(360deg);opacity:0;}
+}
+#rebirthPanel{
+  margin-top:10px;padding:8px;border-radius:8px;border:1px solid var(--accent);
+  background:var(--accent-soft);max-width:420px;
+}
+#rebirthTree{
+  margin-top:6px;padding:6px;border-radius:6px;border:1px dashed var(--border);
+  background:var(--bg);font-size:12px;
+}
+
+/* === Glow Buttons for V2.9.1 === */
+.glow-button {
+  color: #eae0e0ff;
+  background: #5a4545ff;
+  border: 2px solid #66ffcc;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-shadow: 0 0 10px #66faffff;
+  box-shadow: 0 0 15px #ffe066ff;
+  animation: glowBtn 2s infinite ease-in-out;
+  cursor: pointer;
+}
+@keyframes glowBtn {
+  50% { box-shadow: 0 0 25px #00ffee; }
+}
+</style>
+</head>
+
+<!-- dark mode ON by default -->
+<body class="dark">
+<h1 class="glow-subtitle"> Spin the Box [ALPHA V3.0.0 - The great reboot]</h1>
+<p class="glow-subtitle"> [UPDATE DESCRIPTION: THE GREAT REBOOT]</p>
+
+<div id="box"></div>
+<button class="glow-button" id="spinButton" onclick="spinBox()">Spin the Box</button>
+<button class="glow-button" id="themeToggle" onclick="switchTheme()">Switch Theme</button>
+
+<p class="glow-subtitle" id="message"></p>
+<p class="glow-subtitle" id="counter">Times box spun: 0</p>
+<p class="glow-subtitle" id="lifetime">Lifetime box spun: 0</p>
+<p class="glow-subtitle" id="prestigeSpinDisplay">Spins this prestige: 0</p>
+<p class="glow-subtitle" id="rebirthSpinDisplay">This Rebirth Spins: 0</p>
+<p class="glow-subtitle" id="cooldownDisplay">Current cooldown: 3.0s</p>
+<p class="glow-subtitle" id="ptmDisplay">Playtime Multiplier: x1.00</p>
+
+<button class="glow-button" onclick="upgradeCooldown()">Upgrade Cooldown (-0.1s base)</button>
+<p class="glow-subtitle" id="upgradeCost">Upgrade cost: 5 spins</p>
+
+<p class="glow-subtitle" id="spinGainDisplay">Spin Gain: +1 per spin (before multipliers)</p>
+<button class="glow-button" onclick="buySpins()">Buy Spin Gain</button>
+<p class="glow-subtitle" id="spinBuyCost">Spin gain upgrade cost: 5 spins</p>
+
+<button class="glow-button" onclick="upgradeSuperSpin()">Upgrade SUPER SPIN Chance</button>
+<p class="glow-subtitle" id="superSpinCost">SUPER SPIN upgrade cost: 5 spins</p>
+<p class="glow-subtitle" id="superSpinChance">SUPER SPIN chance: 20%</p>
+
+<button class="glow-button" onclick="upgradeSuperMult()">Upgrade SUPER Multiplier (+0.5x)</button>
+<p class="glow-subtitle" id="superMultDisplay">SUPER Multiplier: x3.0</p>
+<p class="glow-subtitle" id="superMultCost">SUPER Multiplier upgrade cost: 10 spins</p>
+
+<hr>
+<button class="glow-button" onclick="upgradeAuto()">Upgrade Auto-Click (-0.2s)</button>
+<p class="glow-subtitle" id="autoInfo">Auto-click: 10.0s | Cost: 1 spin</p>
+
+<hr>
+<!-- Prestige button now glows -->
+<button class="glow-button" onclick="buyPrestige()">Prestige (+75% permanent spins)</button>
+<p class="glow-subtitle" id="prestigeCost">Prestige cost: 50,000</p>
+<p class="glow-subtitle" id="prestigeCount">Prestiges: 0</p>
+
+<div id="rebirthPanel">
+  <h2>Rebirths</h2>
+  <p class="glow-subtitle" id="cosmicCoinsDisplay">Cosmic Coins: 0</p>
+  <p class="glow-subtitle" id="rebirthsDisplay">Rebirths: 0</p>
+  <p class="glow-subtitle" id="rebirthPointsDisplay">Rebirth Points: 0</p>
+  <p class="glow-subtitle" id="rebirthMultDisplay">Rebirth Multiplier: x1</p>
+  <p class="glow-subtitle" id="rebirthCostDisplay">Next Rebirth Cost: 5 Cosmic Coins</p>
+  <!-- Rebirth button now glows -->
+  <button class="glow-button" onclick="doRebirth()">Rebirth (Reset everything for cosmic power)</button>
+
+  <div id="rebirthTree">
+    <h3>The Rebirth Tree</h3>
+    <p>Spend Rebirth Points on permanent upgrades:</p>
+    <ul>
+      <li>
+        <button class="glow-button" onclick="buyRebirthNode('rb_spinBoost')">[RB1] Spin Surge (Cost: 20 RP)</button>
+        — +25% global spin gain
+      </li>
+      <li>
+        <button class="glow-button" onclick="buyRebirthNode('rb_cdBoost')">[RB2] Time Fracture (Cost: 30 RP)</button>
+        — -10% effective cooldown (after achievements)
+      </li>
+      <li>
+        <button class="glow-button" onclick="buyRebirthNode('rb_autoBoost')">[RB3] Auto Ascension (Cost: 25 RP)</button>
+        — +50% auto-spin gain
+      </li>
+      <li>
+        <button class="glow-button" onclick="buyRebirthNode('rb_superBoost')">[RB4] Cosmic SUPER (Cost: 40 RP)</button>
+        — +10% SUPER chance, +0.5x SUPER multiplier
+      </li>
+      <li>
+        <button class="glow-button" onclick="buyRebirthNode('rb_ptmBoost')">[RB5] Time Lord (Cost: 35 RP)</button>
+        — PTM grows 10% faster
+      </li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+<h2>Achievements</h2>
+<div id="achievementList"></div>
+
+<h3>Cheat Console</h3>
+<input id="cheatInput" placeholder="Type cheat code...">
+<button onclick="cheat(document.getElementById('cheatInput').value)">Run</button>
+<p id="cheatWarning"></p>
+<button id="cheaterToggle" onclick="enableCheaterMode()">⚠ Enable Cheater Mode (Permanent)</button>
+
+<div id="cheatPanel">
+  <h4>Cheat Commands</h4>
+  <p>These commands work while Cheater Mode or devmode is enabled:</p>
+  <ul>
+    <li><code>\set[spins=100000]</code></li>
+    <li><code>\set[multiplier=10]</code></li>
+    <li><code>\set[prestiges=5]</code></li>
+    <li><code>\set[playtime_multi=2.50]</code></li>
+    <li><code>\set[cosmic_coins=100]</code></li>
+    <li><code>\set[rebirth_points=100]</code></li>
+    <li><code>\show[spins]</code>, <code>\show[stats]</code>, <code>\show[rebirths]</code>, <code>\show[cosmic_coins]</code>, <code>\show[rebirth_points]</code></li>
+    <li><code>\force[prestige=X]</code>, <code>\force[rebirths=X]</code></li>
+  </ul>
+  <p style="font-size:11px;">Devmode only: <code>\unlock[achievement=id]</code>, <code>\achievements[give=all]</code></p>
+</div>
+
+<div id="logPanel">
+  <h4>Logs</h4>
+  <div class="log-filters">
+    <button onclick="setLogFilter('all')" id="filter-all" class="active">All</button>
+    <button onclick="setLogFilter('info')" id="filter-info">Info</button>
+    <button onclick="setLogFilter('system')" id="filter-system">System</button>
+    <button onclick="setLogFilter('cheat')" id="filter-cheat">Cheat</button>
+    <button onclick="setLogFilter('dev')" id="filter-dev">Dev</button>
+    <button onclick="setLogFilter('achievement')" id="filter-achievement">Achv</button>
+    <button onclick="setLogFilter('error')" id="filter-error">Error</button>
+  </div>
+  <button id="clearLogsBtn" onclick="clearLogs()">Clear Logs</button>
+  <div id="logEntries"></div>
+</div>
+
+<div id="prestigeModal" class="modal-backdrop">
+  <div class="modal">
+    <h3>Prestige Confirmation</h3>
+    <p>You will reset your upgrades,<br>but gain a permanent +75% spin bonus per prestige.</p>
+    <p id="prestigeSummary"></p>
+    <button onclick="confirmPrestigeYes()">Yes, Prestige</button>
+    <button onclick="confirmPrestigeNo()">Cancel</button>
+  </div>
+</div>
+
+<div id="breatherModal" class="modal-backdrop">
+  <div class="modal">
+    <p>Why not take a breather?<br><br>Do you need some time outside?</p>
+    <button onclick="closeBreather()">Yeah...</button>
+    <button onclick="closeBreather()">I'm fine.</button>
+  </div>
+</div>
+
+<script>
+/* ---------- CORE STATE ---------- */
+let spinCount=0,lifetimeSpins=0,prestigeSpins=0,rebirthSpins=0;
+let canSpin=true;
+let baseCooldown=3.0;
+let upgradeCost=5;
+let spinGain=0,spinBuyCost=5;
+let superSpinChance=20,superSpinUpgradeCost=5;
+let superMult=3,superMultLevel=0,superMultUpgradeCost=10;
+let cheatUsed=false;
+let prestiges=0,prestigeCost=50000;
+const BASE_COST_CAP=3500000;
+let COST_CAP=BASE_COST_CAP;
+
+let autoCooldown=10,autoUpgradeCost=1,autoTimer=null;
+
+let playTimeSeconds=0,playTimer=null,breatherShown=false;
+let manualSuperStreak=0,autoSuperStreak=0;
+
+let cheaterMode=false,devmodeEnabled=false,devmodeEver=false;
+let ptmOverride=null;
+let currentLogFilter="all";
+
+/* Rebirth layer */
+let cosmicCoins=0;
+let rebirths=0;
+let rebirthPoints=0;
+let rebirthScalingFactor=1.0;
+let rebirthNodes={
+  rb_spinBoost:false,
+  rb_cdBoost:false,
+  rb_autoBoost:false,
+  rb_superBoost:false,
+  rb_ptmBoost:false
+};
+
+/* ---------- ACHIEVEMENT DATA ---------- */
+const achievements=[
+  {id:"firstSpin",name:"The Beginning",desc:"Spin the box once.",requirement:1,category:"General",unlocked:false},
+  {id:"super",name:"SUPER!",desc:"Trigger a SUPER SPIN.",requirement:"super",category:"Super",unlocked:false},
+  {id:"cooldown05",name:"Speed Demon",desc:"Reach 0.5s base cooldown.",requirement:"cooldown05",category:"Upgrades",unlocked:false},
+  {id:"super100",name:"Maxiuimum Luck",desc:"Reach 100% SUPER chance.",requirement:"super100",category:"Upgrades",unlocked:false},
+  {id:"overcap",name:"Beyond Limits",desc:"Go beyond normal caps.",requirement:"overcap",category:"Super",unlocked:false},
+  {id:"cheat",name:"Cheater",desc:"Use a cheat.",requirement:"cheat",category:"Special",unlocked:false},
+  {id:"prestige1",name:"A new beginning. But buffed",desc:"Prestige once.",requirement:"prestige1",category:"Prestige",unlocked:false},
+  {id:"prestige3",name:"Aain and again and again and again",desc:"Prestige 3 times.",requirement:"prestige3",category:"Prestige",unlocked:false},
+  {id:"prestige5",name:"This is getting old,and expensive!",desc:"Prestige 5 times.",requirement:"prestige5",category:"Prestige",unlocked:false},
+  {id:"prestige10",name:"It costs A LOT to prestige now eh?",desc:"Prestige 10 times.",requirement:"prestige10",category:"Prestige",unlocked:false},
+  {id:"autoSuper",name:"DAYUM! THATS GOOD!",desc:"Get a SUPER AUTO-SPIN.",requirement:"autoSuper",category:"Super",unlocked:false},
+  {id:"breather30",name:"Take a Breather",desc:"Play for 30 minutes.",requirement:"breather30",category:"Time",unlocked:false},
+  {id:"superStreak",name:"SUPER Streak",desc:"5 manual SUPERs in a row.",requirement:"superStreak",category:"Super",unlocked:false},
+  {id:"autoMadness",name:"Super-AUTO Streak",desc:"5 auto SUPERs in a row.",requirement:"autoMadness",category:"Super",unlocked:false},
+  {id:"chatgptChaos",name:"What ChatGPT does",desc:"Get over 10m spins or somehow get less than 0 spins.",requirement:"chatgptChaos",category:"Special",unlocked:false},
+  {id:"resurrector",name:"Code Resurrector",desc:"Play 1 hour without cheat penalty.",requirement:"resurrector",category:"Time",unlocked:false},
+  {id:"devmode",name:"So you must know the guy who made this",desc:"Enable devmode.",requirement:"devmode",category:"Special",unlocked:false},
+  {id:"completionist",name:"Completionist",desc:"Unlock almost everything legit.",requirement:"completionist",category:"Special",unlocked:false},
+  {id:"rebirth1",name:"Cosmic Reality",desc:"Rebirth once.",requirement:"rebirth1",category:"Rebirth",unlocked:false},
+  {id:"rebirth3",name:"INSANE DEDACATION",desc:"Rebirth 3 times.",requirement:"rebirth3",category:"Rebirth",unlocked:false},
+  {id:"rebirth5",name:"Very interesing...",desc:"Rebirth 5 times.",requirement:"rebirth5",category:"Rebirth",unlocked:false},
+  {id:"rebirth10",name:"You ARE the box",desc:"Rebirth 10 times.",requirement:"rebirth10",category:"Rebirth",unlocked:false},
+  {id:"myEyes", name:"MY EYES!", desc:"Switch to Light Mode.", requirement:"myEyes", category:"Fun", unlocked:false},
+  {id:"phew", name:"PHEW!", desc:"Switch back to Dark Mode.", requirement:"phew", category:"Fun", unlocked:false},
+  {id:"cosmic100",name:"Daniel's Blessing of 100% Cosmicity",desc:"Get 100 Cosmic Coins.",requirement:"cosmic100",category:"Rebirth",unlocked:false},
+  {id:"cheaterPath",name:"Cheater's Path",desc:"Enable Cheater Mode.",requirement:"cheaterPath",category:"Special",unlocked:false},
+  {id:"idiot",name:"You Idiot",desc:"Push cooldown or SUPER beyond sense.",requirement:"idiot",category:"Special",unlocked:false}
+];
+
+/* ---------- ACHIEVEMENT UI ---------- */
+function updateAchievementList(){
+  const container=document.getElementById("achievementList");
+  container.innerHTML="";
+  let byCat={};
+  achievements.forEach(a=>{
+    if(!byCat[a.category])byCat[a.category]=[];
+    byCat[a.category].push(a);
+  });
+  Object.keys(byCat).forEach(cat=>{
+    const h=document.createElement("h3");
+    h.textContent=cat;
+    container.appendChild(h);
+    byCat[cat].forEach(a=>{
+      const p=document.createElement("p");
+      p.className=a.unlocked?"unlocked":"locked";
+      p.textContent=(a.unlocked?"[✓] ":"[X] ")+a.name+" — "+a.desc;
+      container.appendChild(p);
+    });
+  });
+}
+function unlockAchievement(a){
+  if(a.unlocked) return;
+  a.unlocked = true;
+
+  //Achievement popup (ALWAYS shows)
+  alert("You got an achievement! It's called:\n" + a.name);
+
+  updateAchievementList();
+  addLog("Achievement unlocked: " + a.name, "achievement");
+}
+
+
+/* ---------- LOGGING ---------- */
+function addLog(text,type="info"){
+  const logEntries=document.getElementById("logEntries");
+  const entry=document.createElement("div");
+  entry.className="log-entry log-"+type;
+  const timeSpan=document.createElement("span");
+  timeSpan.className="time";
+  const now=new Date();
+  timeSpan.textContent="["+now.toLocaleTimeString()+"]";
+  const textSpan=document.createElement("span");
+  textSpan.className="text";
+  textSpan.textContent=" "+text;
+  entry.appendChild(timeSpan);
+  entry.appendChild(textSpan);
+  logEntries.appendChild(entry);
+  applyLogFilter();
+  logEntries.scrollTop=logEntries.scrollHeight;
+}
+function setLogFilter(filter){
+  currentLogFilter=filter;
+  document.querySelectorAll(".log-filters button").forEach(btn=>btn.classList.remove("active"));
+  const btn=document.getElementById("filter-"+filter);
+  if(btn)btn.classList.add("active");
+  applyLogFilter();
+}
+function applyLogFilter(){
+  const entries=document.querySelectorAll(".log-entry");
+  entries.forEach(e=>{
+    if(currentLogFilter==="all"){e.style.display="block";return;}
+    if(e.classList.contains("log-"+currentLogFilter))e.style.display="block";
+    else e.style.display="none";
+  });
+}
+function clearLogs(){
+  document.getElementById("logEntries").innerHTML="";
+}
+
+/* ---------- MATH HELPERS ---------- */
+function rebirthMult(){
+  // simple: +1x per rebirth
+  return 1+rebirths;
+}
+function globalMult(){
+  // +75% per prestige, multiplied by rebirth multiplier
+  return (1+0.75*prestiges)*rebirthMult();
+}
+function currentPTM(){
+  if(ptmOverride)return ptmOverride;
+  // simple PTM: grows slowly with playtime, capped a bit
+  let base=1+playTimeSeconds/6000; // +0.1 per 10 minutes
+  if(rebirthNodes.rb_ptmBoost)base*=1.1;
+  return base;
+}
+function effectiveCooldown(){
+  let cd=baseCooldown;
+  if(rebirthNodes.rb_cdBoost)cd*=0.9;
+  if(cd<0.1)cd=0.1;
+  return cd;
+}
+function recalcCostCap(){
+  // scale cap slightly with rebirths
+  COST_CAP=Math.floor(BASE_COST_CAP*rebirthMult());
+}
+
+/* ---------- UI UPDATE HELPERS ---------- */
+function updateCooldownDisplay(){
+  document.getElementById("cooldownDisplay").textContent=
+    "Current cooldown: "+effectiveCooldown().toFixed(1)+"s";
+}
+function updateSpinGainDisplay(){
+  document.getElementById("spinGainDisplay").textContent=
+    "Spin Gain: +"+(1+spinGain)+" per spin (before multipliers)";
+}
+function updatePTMDisplay(){
+  const ptm=currentPTM()*globalMult();
+  document.getElementById("ptmDisplay").textContent=
+    "Playtime Multiplier: x"+ptm.toFixed(2);
+}
+function updateCosmicRebirthUI(){
+  document.getElementById("cosmicCoinsDisplay").textContent="Cosmic Coins: "+cosmicCoins;
+  document.getElementById("rebirthsDisplay").textContent="Rebirths: "+rebirths;
+  document.getElementById("rebirthPointsDisplay").textContent="Rebirth Points: "+rebirthPoints;
+  document.getElementById("rebirthMultDisplay").textContent="Rebirth Multiplier: x"+rebirthMult().toFixed(0);
+  document.getElementById("rebirthCostDisplay").textContent="Next Rebirth Cost: "+rebirthCost()+" Cosmic Coins";
+}
+
+/* ---------- CONFETTI ---------- */
+function spawnConfetti(x,y){
+  for(let i=0;i<12;i++){
+    const c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=(x+Math.random()*80-40)+"px";
+    c.style.top=(y+Math.random()*40-20)+"px";
+    c.style.backgroundColor=["#ff0","#001affff","#f0f","#0ff","rgba(255, 0, 0, 1)","#f80","rgba(0, 255, 0, 1)"][Math.floor(Math.random()*5)];
+    c.style.animationDuration=(0.6+Math.random()*0.4)+"s";
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),1000);
+  }
+}
+
+function switchTheme(){
+  const body = document.body;
+  const wasDark = body.classList.contains("dark");
+
+  body.classList.toggle("dark");
+
+  // NEW ACHIEVEMENT TRIGGERS
+  if (wasDark && !body.classList.contains("dark")) {
+    // Dark → Light
+    let a = achievements.find(x => x.id === "myEyes");
+    if (a && !a.unlocked) unlockAchievement(a);
+
+    // FLASHBANG EFFECT
+    body.classList.add("flashbang");
+    setTimeout(() => body.classList.remove("flashbang"), 600);
+  }
+
+  if (!wasDark && body.classList.contains("dark")) {
+    // Light → Dark
+    let a = achievements.find(x => x.id === "phew");
+    if (a && !a.unlocked) unlockAchievement(a);
+  }
+}
+
+
+/* ---------- ACHIEVEMENT CHECKS ---------- */
+function checkAchievements(gained,wasSuper,wasAutoSuper){
+  achievements.forEach(a=>{
+    if(a.unlocked)return;
+    if(typeof a.requirement==="number" && lifetimeSpins>=a.requirement)unlockAchievement(a);
+    if(a.requirement==="super" && wasSuper)unlockAchievement(a);
+    if(a.requirement==="cooldown05" && baseCooldown<=0.5)unlockAchievement(a);
+    if(a.requirement==="super100" && superSpinChance>=100)unlockAchievement(a);
+    if(a.requirement==="overcap" && (superSpinChance>100||baseCooldown<0.5))unlockAchievement(a);
+    if(a.requirement==="cheat" && cheatUsed)unlockAchievement(a);
+    if(a.requirement==="prestige1" && prestiges>=1)unlockAchievement(a);
+    if(a.requirement==="prestige3" && prestiges>=3)unlockAchievement(a);
+    if(a.requirement==="prestige5" && prestiges>=5)unlockAchievement(a);
+    if(a.requirement==="prestige10" && prestiges>=10)unlockAchievement(a);
+    if(a.requirement==="autoSuper" && wasAutoSuper)unlockAchievement(a);
+    if(a.requirement==="breather30" && playTimeSeconds>=1800)unlockAchievement(a);
+    if(a.requirement==="superStreak" && manualSuperStreak>=5)unlockAchievement(a);
+    if(a.requirement==="autoMadness" && autoSuperStreak>=5)unlockAchievement(a);
+    if(a.requirement==="chatgptChaos" && (lifetimeSpins>10000000||spinCount<0))unlockAchievement(a);
+    if(a.requirement==="resurrector" && playTimeSeconds>=3600 && (!cheatUsed||devmodeEnabled))unlockAchievement(a);
+    if(a.requirement==="devmode" && devmodeEver)unlockAchievement(a);
+    if(a.requirement==="completionist"){
+      let nonSpecial=achievements.filter(x=>x.id!=="completionist" && x.category!=="Special");
+      if(nonSpecial.every(x=>x.unlocked) && (!cheatUsed||devmodeEnabled))unlockAchievement(a);
+    }
+    if(a.requirement==="rebirth1" && rebirths>=1)unlockAchievement(a);
+    if(a.requirement==="rebirth3" && rebirths>=3)unlockAchievement(a);
+    if(a.requirement==="rebirth5" && rebirths>=5)unlockAchievement(a);
+    if(a.requirement==="rebirth10" && rebirths>=10)unlockAchievement(a);
+    if(a.requirement==="cosmic100" && cosmicCoins>=100)unlockAchievement(a);
+    if(a.requirement==="cheaterPath" && cheaterMode)unlockAchievement(a);
+    if(a.requirement==="knowDev" && devmodeEver)unlockAchievement(a);
+    if(a.requirement==="idiot" && (superSpinChance>100||baseCooldown<0.5))unlockAchievement(a);
+  });
+  if(!breatherShown && playTimeSeconds>=1800){
+    breatherShown=true;
+    document.getElementById("breatherModal").style.display="flex";
+    addLog("Breather suggestion shown (30 minutes).","system");
+  }
+}
+
+/* ---------- SPIN LOGIC ---------- */
+function spinBox(){
+  if(!canSpin)return;
+  const box=document.getElementById("box");
+  const msg=document.getElementById("message");
+  const btn=document.getElementById("spinButton");
+  canSpin=false;
+  box.classList.add("spin-active");
+  setTimeout(()=>box.classList.remove("spin-active"),200);
+  const r=box.getBoundingClientRect();
+  spawnConfetti(r.left+r.width/2,r.top+r.height/2);
+
+  let base=(1+spinGain);
+  let ptm=currentPTM()*globalMult();
+  let gained=Math.floor(base*ptm);
+  if(rebirthNodes.rb_spinBoost)gained=Math.floor(gained*1.25);
+
+  let roll=Math.random()*100;
+  let wasSuper=false;
+
+  if(roll<superSpinChance){
+    let superGain=Math.floor(gained*superMult);
+    gained=superGain;
+    wasSuper=true;
+    if(superSpinChance>=20 && superSpinChance<=75)manualSuperStreak++;else manualSuperStreak=0;
+    msg.innerHTML="SUPER SPIN!!! (+"+gained+") x"+superMult.toFixed(1);
+    addLog("SUPER SPIN for +"+gained+" (x"+superMult.toFixed(1)+")","info");
+  }else{
+    manualSuperStreak=0;
+    msg.innerHTML="You spinned the box! (+"+gained+")";
+  }
+
+  spinCount+=gained;
+  lifetimeSpins+=gained;
+  prestigeSpins+=gained;
+  rebirthSpins+=gained;
+
+  document.getElementById("counter").textContent="Times box spun: "+spinCount;
+  document.getElementById("lifetime").textContent="Lifetime box spun: "+lifetimeSpins;
+  document.getElementById("prestigeSpinDisplay").textContent="Spins this prestige: "+prestigeSpins;
+  document.getElementById("rebirthSpinDisplay").textContent="This Rebirth Spins: "+rebirthSpins;
+
+  msg.classList.add("show");
+  let cd=effectiveCooldown();
+  setTimeout(()=>msg.classList.remove("show"),cd*1000);
+
+  let timeLeft=cd;
+  btn.textContent="Cooldown: "+timeLeft.toFixed(1);
+  const countdown=setInterval(()=>{
+    timeLeft-=0.1;
+    btn.textContent="Cooldown: "+Math.max(0,timeLeft).toFixed(1);
+    if(timeLeft<=0){
+      clearInterval(countdown);
+      btn.textContent="Spin the Box";
+      canSpin=true;
+    }
+  },100);
+
+  checkAchievements(gained,wasSuper,false);
+}
+
+/* ---------- AUTO SPIN ---------- */
+function startAutoClicker(){
+  if(autoTimer)clearInterval(autoTimer);
+  autoTimer=setInterval(autoSpin,autoCooldown*1000);
+}
+function autoSpin(){
+  let base=(1+spinGain);
+  let ptm=currentPTM()*globalMult();
+  let gained=Math.floor(base*2*ptm);
+  if(rebirthNodes.rb_autoBoost)gained=Math.floor(gained*1.5);
+
+  let roll=Math.random()*100;
+  let wasSuper=false;
+  const msg=document.getElementById("message");
+
+  if(roll<superSpinChance){
+    gained=Math.floor(gained*superMult);
+    wasSuper=true;
+    if(superSpinChance>=20 && superSpinChance<=75)autoSuperStreak++;else autoSuperStreak=0;
+    msg.innerHTML="SUPER AUTO-SPIN!!! (+"+gained+") x"+superMult.toFixed(1);
+    msg.classList.add("show");
+    setTimeout(()=>msg.classList.remove("show"),1000);
+    addLog("SUPER AUTO-SPIN for +"+gained+" (x"+superMult.toFixed(1)+")","info");
+  }else{
+    autoSuperStreak=0;
+  }
+
+  spinCount+=gained;
+  lifetimeSpins+=gained;
+  prestigeSpins+=gained;
+  rebirthSpins+=gained;
+
+  document.getElementById("counter").textContent="Times box spun: "+spinCount;
+  document.getElementById("lifetime").textContent="Lifetime box spun: "+lifetimeSpins;
+  document.getElementById("prestigeSpinDisplay").textContent="Spins this prestige: "+prestigeSpins;
+  document.getElementById("rebirthSpinDisplay").textContent="This Rebirth Spins: "+rebirthSpins;
+
+  checkAchievements(gained,wasSuper,wasSuper);
+}
+
+/* ---------- UPGRADES ---------- */
+function upgradeAuto(){
+  if(spinCount<autoUpgradeCost)return alert("Not enough spins!");
+  spinCount-=autoUpgradeCost;
+  autoCooldown-=0.2;
+  if(autoCooldown<0.5)autoCooldown=0.5;
+  autoUpgradeCost=Math.ceil(autoUpgradeCost*(1.1*rebirthScalingFactor));
+  if(autoUpgradeCost>COST_CAP)autoUpgradeCost=COST_CAP;
+  document.getElementById("autoInfo").textContent=
+    "Auto-click: "+autoCooldown.toFixed(1)+"s | Cost: "+autoUpgradeCost+" spin"+(autoUpgradeCost===1?"":"s");
+  document.getElementById("counter").textContent="Times box spun: "+spinCount;
+  addLog("Upgraded auto-click to "+autoCooldown.toFixed(1)+"s.","system");
+  startAutoClicker();
+}
+function upgradeCooldown(){
+  if(spinCount<upgradeCost)return alert("Not enough spins!");
+  spinCount-=upgradeCost;
+  baseCooldown-=0.1;
+  if(baseCooldown<0.5){
+    baseCooldown=0.5;
+    let idiot=achievements.find(a=>a.id==="idiot");
+    if(idiot && !idiot.unlocked)unlockAchievement(idiot);
+  }
+  upgradeCost=Math.ceil(upgradeCost*(1.25*rebirthScalingFactor));
+  if(upgradeCost>COST_CAP)upgradeCost=COST_CAP;
+  document.getElementById("upgradeCost").textContent="Upgrade cost: "+upgradeCost+" spins";
+  document.getElementById("counter").textContent="Times box spun: "+spinCount;
+  updateCooldownDisplay();
+  addLog("Upgraded base cooldown to "+baseCooldown.toFixed(1)+"s (effective "+effectiveCooldown().toFixed(1)+"s).","system");
+  checkAchievements(0,false,false);
+}
+function buySpins(){
+  if(spinCount<spinBuyCost)return alert("Not enough spins!");
+  spinCount-=spinBuyCost;
+  spinGain++;
+  spinBuyCost=Math.ceil(spinBuyCost*(1.5*rebirthScalingFactor));
+  if(spinBuyCost>COST_CAP)spinBuyCost=COST_CAP;
+  document.getElementById("spinBuyCost").textContent="Spin gain upgrade cost: "+spinBuyCost+" spins";
+  document.getElementById("counter").textContent="Times box spun: "+spinCount;
+  updateSpinGainDisplay();
+  addLog("Increased spin gain to +"+(1+spinGain)+" per spin (before multipliers).","system");
+}
+function upgradeSuperSpin(){
+  if(spinCount<superSpinUpgradeCost)return alert("Not enough spins!");
+  spinCount-=superSpinUpgradeCost;
+  superSpinChance+=5;
+  if(superSpinChance>100){
+    let idiot=achievements.find(a=>a.id==="idiot");
+    if(idiot && !idiot.unlocked)unlockAchievement(idiot);
+  }
+  superSpinUpgradeCost=Math.ceil(superSpinUpgradeCost*(1.5*rebirthScalingFactor));
+  if(superSpinUpgradeCost>COST_CAP)superSpinUpgradeCost=COST_CAP;
+  document.getElementById("superSpinCost").textContent="SUPER SPIN upgrade cost: "+superSpinUpgradeCost+" spins";
+  document.getElementById("superSpinChance").textContent="SUPER SPIN chance: "+superSpinChance+"%";
+  document.getElementById("counter").textContent="Times box spun: "+spinCount;
+  addLog("SUPER SPIN chance is now "+superSpinChance+"%.","system");
+  checkAchievements(0,false,false);
+}
+function upgradeSuperMult(){
+  if(spinCount<superMultUpgradeCost)return alert("Not enough spins!");
+  spinCount-=superMultUpgradeCost;
+  superMultLevel++;
+  superMult=3+superMultLevel*0.5;
+  superMultUpgradeCost=Math.ceil(superMultUpgradeCost*(1.6*rebirthScalingFactor));
+  if(superMultUpgradeCost>COST_CAP)superMultUpgradeCost=COST_CAP;
+  document.getElementById("superMultDisplay").textContent="SUPER Multiplier: x"+superMult.toFixed(1);
+  document.getElementById("superMultCost").textContent="SUPER Multiplier upgrade cost: "+superMultUpgradeCost+" spins";
+  document.getElementById("counter").textContent="Times box spun: "+spinCount;
+  addLog("SUPER Multiplier is now x"+superMult.toFixed(1)+".","system");
+}
+
+/* ---------- PRESTIGE ---------- */
+let firstPrestigeConfirmed=false;
+function buyPrestige(){
+  if(!firstPrestigeConfirmed && prestiges===0){
+    updatePrestigeSummary();
+    document.getElementById("prestigeModal").style.display="flex";
+    return;
+  }
+  updatePrestigeSummary();
+  document.getElementById("prestigeModal").style.display="flex";
+}
+function updatePrestigeSummary(){
+  document.getElementById("prestigeSummary").textContent=
+    "Cost: "+(devmodeEnabled?"FREE (devmode)":prestigeCost.toLocaleString()+" spins")+" | Current prestiges: "+prestiges;
+}
+function confirmPrestigeYes(){
+  document.getElementById("prestigeModal").style.display="none";
+  if(!firstPrestigeConfirmed && prestiges===0)firstPrestigeConfirmed=true;
+  doPrestige();
+}
+function confirmPrestigeNo(){
+  document.getElementById("prestigeModal").style.display="none";
+}
+function resetUpgradesKeepSpinsPrestige(){
+  prestigeSpins=0;
+  baseCooldown=3;upgradeCost=5;
+  spinGain=0;spinBuyCost=5;
+  superSpinChance=20;superSpinUpgradeCost=5;
+  superMult=3;superMultLevel=0;superMultUpgradeCost=10;
+  autoCooldown=10;autoUpgradeCost=1;
+  startAutoClicker();
+
+  document.getElementById("prestigeSpinDisplay").textContent="Spins this prestige: 0";
+  document.getElementById("upgradeCost").textContent="Upgrade cost: 5 spins";
+  document.getElementById("spinBuyCost").textContent="Spin gain upgrade cost: 5 spins";
+  document.getElementById("superSpinCost").textContent="SUPER SPIN upgrade cost: 5 spins";
+  document.getElementById("superSpinChance").textContent="SUPER SPIN chance: 20%";
+  document.getElementById("superMultDisplay").textContent="SUPER Multiplier: x3.0";
+  document.getElementById("superMultCost").textContent="SUPER Multiplier upgrade cost: 10 spins";
+  document.getElementById("autoInfo").textContent="Auto-click: "+autoCooldown.toFixed(1)+"s | Cost: "+autoUpgradeCost+" spin"+(autoUpgradeCost===1?"":"s");
+  updateCooldownDisplay();
+  updateSpinGainDisplay();
+}
+function doPrestige(){
+  if(!devmodeEnabled && spinCount<prestigeCost)return alert("Not enough spins for prestige!");
+  if(!devmodeEnabled)spinCount-=prestigeCost;
+
+  let gainedCC=Math.floor(Math.random()*10)+1;
+  cosmicCoins+=gainedCC;
+  addLog("Prestige granted "+gainedCC+" Cosmic Coins (total: "+cosmicCoins+").","system");
+
+  prestiges++;
+  prestigeCost+=50000;
+  recalcCostCap();
+
+  resetUpgradesKeepSpinsPrestige();
+
+  document.getElementById("counter").textContent="Times box spun: "+spinCount;
+  document.getElementById("prestigeCost").textContent="Prestige cost: "+prestigeCost.toLocaleString();
+  document.getElementById("prestigeCount").textContent="Prestiges: "+prestiges;
+  updatePTMDisplay();
+  updateCosmicRebirthUI();
+
+  addLog("You prestiged! (Now at "+prestiges+" total.)","system");
+  checkAchievements(0,false,false);
+}
+
+/* ---------- REBIRTH ---------- */
+function resetEverythingForRebirth(){
+  spinCount=0;
+  prestigeSpins=0;
+  rebirthSpins=0;
+  prestiges=0;
+  prestigeCost=50000;
+
+  baseCooldown=3;upgradeCost=5;
+  spinGain=0;spinBuyCost=5;
+  superSpinChance=20;superSpinUpgradeCost=5;
+  superMult=3;superMultLevel=0;superMultUpgradeCost=10;
+  autoCooldown=10;autoUpgradeCost=1;
+  startAutoClicker();
+
+  ptmOverride=null;
+  manualSuperStreak=0;
+  autoSuperStreak=0;
+
+  document.getElementById("counter").textContent="Times box spun: 0";
+  document.getElementById("prestigeSpinDisplay").textContent="Spins this prestige: 0";
+  document.getElementById("rebirthSpinDisplay").textContent="This Rebirth Spins: 0";
+  document.getElementById("prestigeCost").textContent="Prestige cost: "+prestigeCost.toLocaleString();
+  document.getElementById("prestigeCount").textContent="Prestiges: 0";
+  document.getElementById("upgradeCost").textContent="Upgrade cost: 5 spins";
+  document.getElementById("spinBuyCost").textContent="Spin gain upgrade cost: 5 spins";
+  document.getElementById("superSpinCost").textContent="SUPER SPIN upgrade cost: 5 spins";
+  document.getElementById("superSpinChance").textContent="SUPER SPIN chance: 20%";
+  document.getElementById("superMultDisplay").textContent="SUPER Multiplier: x3.0";
+  document.getElementById("superMultCost").textContent="SUPER Multiplier upgrade cost: 10 spins";
+  document.getElementById("autoInfo").textContent="Auto-click: "+autoCooldown.toFixed(1)+"s | Cost: "+autoUpgradeCost+" spin"+(autoUpgradeCost===1?"":"s");
+  updateCooldownDisplay();
+  updateSpinGainDisplay();
+  updatePTMDisplay();
+}
+function rebirthCost(){return (rebirths+1)*5;}
+function doRebirth(){
+  let cost=rebirthCost();
+  if(cosmicCoins<cost){
+    alert("Not enough Cosmic Coins for rebirth! Need "+cost+".");
+    return;
+  }
+  cosmicCoins-=cost;
+
+  rebirths++;
+  let gainedRP=rebirths*10;
+  rebirthPoints+=gainedRP;
+
+  rebirthScalingFactor*=0.90;
+  if(rebirthScalingFactor<1.015)rebirthScalingFactor=1.015;
+  recalcCostCap();
+
+  resetEverythingForRebirth();
+  updateCosmicRebirthUI();
+  updatePTMDisplay();
+
+  addLog("Rebirth performed! Rebirths: "+rebirths+" | +"+gainedRP+" RP | scaling factor: "+rebirthScalingFactor.toFixed(3),"system");
+  checkAchievements(0,false,false);
+}
+
+/* ---------- REBIRTH TREE ---------- */
+function buyRebirthNode(id){
+  if(rebirthNodes[id])return alert("Already purchased.");
+  let cost=0;
+  if(id==="rb_spinBoost")cost=20;
+  if(id==="rb_cdBoost")cost=30;
+  if(id==="rb_autoBoost")cost=25;
+  if(id==="rb_superBoost")cost=40;
+  if(id==="rb_ptmBoost")cost=35;
+  if(rebirthPoints<cost)return alert("Not enough Rebirth Points!");
+  rebirthPoints-=cost;
+  rebirthNodes[id]=true;
+  updateCosmicRebirthUI();
+  addLog("Rebirth Tree node purchased: "+id+" (cost "+cost+" RP).","system");
+  if(id==="rb_superBoost"){
+    superSpinChance+=10;
+    superMult+=0.5;
+    document.getElementById("superSpinChance").textContent="SUPER SPIN chance: "+superSpinChance+"%";
+    document.getElementById("superMultDisplay").textContent="SUPER Multiplier: x"+superMult.toFixed(1);
+  }
+}
+
+/* ---------- CHEATS & DEVMODE ---------- */
+function enableCheaterMode(){
+  if(cheaterMode)return;
+  cheaterMode=true;
+  cheatUsed=true;
+  updateCheatWarning();
+  updateCheatUI();
+  const btn=document.getElementById("cheaterToggle");
+  btn.textContent="Cheater Mode Enabled (Permanent)";
+  btn.disabled=true;
+  addLog("Cheater Mode enabled (permanent).","cheat");
+  let a=achievements.find(x=>x.id==="cheaterPath");
+  if(a && !a.unlocked)unlockAchievement(a);
+}
+function updateCheatUI(){
+  document.getElementById("cheatPanel").style.display=(cheaterMode||devmodeEnabled)?"block":"none";
+}
+function updateCheatWarning(){
+  const warn=document.getElementById("cheatWarning");
+  if(cheatUsed && !devmodeEnabled){
+    warn.textContent="⚠ Cheats used: Code Resurrector and Completionist (legit) cannot be earned on this save.";
+  }else warn.textContent="";
+}
+function cheat(input){
+  if(!input.startsWith("\\"))return;
+
+  if(input.startsWith("\\enter[")){
+    let inside=input.slice(7,-1);
+    let [key,value]=inside.split("=");
+    if(key==="devmode"){
+      if(value==="true"){
+        devmodeEnabled=true;
+        devmodeEver=true;
+        cheatUsed=false;
+        updateCheatUI();
+        updateCheatWarning();
+        addLog("Devmode enabled (secret, no restrictions).","dev");
+        let a=achievements.find(x=>x.id==="knowDev");
+        if(a && !a.unlocked)unlockAchievement(a);
+      }else if(value==="false"){
+        devmodeEnabled=false;
+        updateCheatUI();
+        updateCheatWarning();
+        addLog("Devmode disabled.","dev");
+      }
+    }
+    return;
+  }
+
+  if(!cheaterMode && !devmodeEnabled){
+    alert("Cheats are disabled.");
+    addLog("Cheat attempt blocked (no mode active).","error");
+    return;
+  }
+
+  const isDev=devmodeEnabled;
+  if(!isDev){cheatUsed=true;updateCheatWarning();}
+
+  if(input.startsWith("\\unlock[")){
+    if(!isDev){
+      alert("Achievement unlock cheats are devmode-only.");
+      addLog("Blocked attempt to unlock achievement via cheat (non-dev).","error");
+      return;
+    }
+    let inside=input.slice(8,-1);
+    let [key,value]=inside.split("=");
+    if(key==="achievement"){
+      let a=achievements.find(x=>x.id===value);
+      if(a)unlockAchievement(a),addLog("Dev: unlocked achievement "+value+".","dev");
+      else addLog("Dev: tried to unlock unknown achievement "+value+".","error");
+    }
+    return;
+  }
+
+  if(input.startsWith("\\achievements[")){
+    let inside=input.slice(13,-1);
+    let [key,value]=inside.split("=");
+    if(key==="give" && value==="all"){
+      if(!isDev){
+        alert("Giving all achievements at once is devmode-only.");
+        addLog("Blocked attempt to give all achievements (non-dev).","error");
+        return;
+      }
+      achievements.forEach(a=>unlockAchievement(a));
+      addLog("Dev: gave all achievements.","dev");
+      return;
+    }
+  }
+
+  if(input.startsWith("\\show[")){
+    let inside=input.slice(6,-1);
+    if(inside==="spins"){
+      addLog("Spins: "+spinCount+" | Lifetime: "+lifetimeSpins,"system");
+    }else if(inside==="stats"){
+      addLog("Stats -> Spins: "+spinCount+", Lifetime: "+lifetimeSpins+
+             ", Prestiges: "+prestiges+", Rebirths: "+rebirths+
+             ", PTM: x"+(currentPTM()*globalMult()).toFixed(2)+
+             ", SuperChance: "+superSpinChance+"%, SuperMult: x"+superMult.toFixed(1),"system");
+    }else if(inside==="prestiges"){
+      addLog("Prestiges: "+prestiges+" (Next cost: "+prestigeCost+")","system");
+    }else if(inside==="multiplier"){
+      addLog("SUPER Multiplier: x"+superMult.toFixed(1),"system");
+    }else if(inside==="rebirths"){
+      addLog("Rebirths: "+rebirths+" (Next cost: "+rebirthCost()+" CC)","system");
+    }else if(inside==="cosmic_coins"){
+      addLog("Cosmic Coins: "+cosmicCoins,"system");
+    }else if(inside==="rebirth_points"){
+      addLog("Rebirth Points: "+rebirthPoints,"system");
+    }
+    return;
+  }
+
+  if(input.startsWith("\\force[")){
+    let inside=input.slice(7,-1);
+    let [key,value]=inside.split("=");
+    if(key==="prestige"){
+      if(!value){
+        addLog("Invalid input: (empty) (expected whole number ≥ 1)","error");
+        return;
+      }
+      let n=Number(value);
+      if(!Number.isInteger(n) || n<1){
+        addLog("Invalid input: "+value+" (expected whole number ≥ 1)","error");
+        return;
+      }
+      for(let i=0;i<n;i++){
+        prestiges++;
+        prestigeCost+=50000;
+      }
+      recalcCostCap();
+      document.getElementById("prestigeCount").textContent="Prestiges: "+prestiges;
+      document.getElementById("prestigeCost").textContent="Prestige cost: "+prestigeCost.toLocaleString();
+      updatePTMDisplay();
+      addLog("Forced "+n+" prestiges (now at "+prestiges+" total)","dev");
+    }
+    if(key==="rebirths"){
+      if(!value){
+        addLog("Invalid input: (empty) (expected whole number ≥ 1)","error");
+        return;
+      }
+      let n=Number(value);
+      if(!Number.isInteger(n) || n<1){
+        addLog("Invalid input: "+value+" (expected whole number ≥ 1)","error");
+        return;
+      }
+      for(let i=0;i<n;i++){
+        rebirths++;
+        let gainedRP=rebirths*10;
+        rebirthPoints+=gainedRP;
+        rebirthScalingFactor*=0.90;
+        if(rebirthScalingFactor<1.005)rebirthScalingFactor=1.005;
+      }
+      recalcCostCap();
+      resetEverythingForRebirth();
+      updateCosmicRebirthUI();
+      updatePTMDisplay();
+      addLog("Forced "+n+" rebirths (now at "+rebirths+" total)","dev");
+    }
+    return;
+  }
+
+  if(input.startsWith("\\set[")){
+    let inside=input.slice(5,-1);
+    let [key,value]=inside.split("=");
+    if(key==="spins"){
+      let newValue=Number(value);
+      lifetimeSpins+=Math.max(0,newValue-spinCount);
+      spinCount=newValue;
+      document.getElementById("counter").textContent="Times box spun: "+spinCount;
+      document.getElementById("lifetime").textContent="Lifetime box spun: "+lifetimeSpins;
+      addLog("Cheat: set spins to "+newValue+".",isDev?"dev":"cheat");
+    }
+    if(key==="multiplier"){
+      superMult=Number(value);
+      document.getElementById("superMultDisplay").textContent="SUPER Multiplier: x"+superMult.toFixed(1);
+      addLog("Cheat: set SUPER Multiplier to x"+superMult.toFixed(1)+".",isDev?"dev":"cheat");
+    }
+    if(key==="prestiges"){
+      prestiges=Number(value);if(prestiges<0)prestiges=0;
+      prestigeCost=50000+50000*prestiges;
+      recalcCostCap();
+      document.getElementById("prestigeCount").textContent="Prestiges: "+prestiges;
+      document.getElementById("prestigeCost").textContent="Prestige cost: "+prestigeCost.toLocaleString();
+      updatePTMDisplay();
+      addLog("Cheat: set prestiges to "+prestiges+".",isDev?"dev":"cheat");
+    }
+    if(key==="playtime_multi"){
+      ptmOverride=Number(value);
+      if(isNaN(ptmOverride)||ptmOverride<=0)ptmOverride=null;
+      updatePTMDisplay();
+      addLog("Cheat: set PTM override to "+(ptmOverride?("x"+ptmOverride.toFixed(2)):"none")+".",isDev?"dev":"cheat");
+    }
+    if(key==="cosmic_coins"){
+      cosmicCoins=Number(value);if(cosmicCoins<0)cosmicCoins=0;
+      updateCosmicRebirthUI();
+      addLog("Cheat: set Cosmic Coins to "+cosmicCoins+".",isDev?"dev":"cheat");
+    }
+    if(key==="rebirth_points"){
+      rebirthPoints=Number(value);if(rebirthPoints<0)rebirthPoints=0;
+      updateCosmicRebirthUI();
+      addLog("Cheat: set Rebirth Points to "+rebirthPoints+".",isDev?"dev":"cheat");
+    }
+  }
+
+  checkAchievements(0,false,false);
+}
+
+/* ---------- PLAYTIME ---------- */
+function startPlayTimer(){
+  if(playTimer)clearInterval(playTimer);
+  playTimer=setInterval(()=>{
+    if(document.visibilityState==="visible"){
+      playTimeSeconds++;
+      updatePTMDisplay();
+      checkAchievements(0,false,false);
+    }
+  },1000);
+}
+function closeBreather(){
+  document.getElementById("breatherModal").style.display="none";
+  addLog("Breather modal closed.","system");
+}
+
+/* ---------- INIT ---------- */
+startPlayTimer();
+startAutoClicker();
+updateAchievementList();
+updateCheatUI();
+updateCheatWarning();
+updateCooldownDisplay();
+recalcCostCap();
+updateSpinGainDisplay();
+updatePTMDisplay();
+updateCosmicRebirthUI();
+addLog("Spin the Box [ALPHA V3.0.0] started.","system");
+addLog("ALPHA is coming soon at V3.0.0!","system");
+addLog("Daniel (guy who made this was here)! Thanks for playing. Seriously :)","info");
+addLog("Credits to Daniel (me :D) for founding, a bit of code, feeding ideas, playtesting. Credits to Copilot for most code. Credit to... ChatGPT... for breaking all the code... 5 TIMES. :/","info");
+addLog("SIGIL Sheild is active, preventing hacks!")
+</script>
+</body>
+</html>
